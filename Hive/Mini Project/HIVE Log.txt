@@ -1,0 +1,321 @@
+ip-20-0-41-53 login: arun.kpselvam_gmail     
+Password: 
+Last login: Sun Jun 17 17:06:53 on pts/46
+[arun.kpselvam_gmail@ip-20-0-41-53 ~]$ hdfs dfs -put Consultantdata.txt /user/arun.kpselvam_gmail/employees_data
+[arun.kpselvam_gmail@ip-20-0-41-53 ~]$ hive
+Java HotSpot(TM) 64-Bit Server VM warning: ignoring option MaxPermSize=512M; support was removed in 8.0
+Java HotSpot(TM) 64-Bit Server VM warning: ignoring option MaxPermSize=512M; support was removed in 8.0
+18/06/17 17:12:07 WARN conf.HiveConf: HiveConf of name hive.txn.strict.locking.mode does not exist
+
+Logging initialized using configuration in jar:file:/opt/cloudera/parcels/CDH-5.11.2-1.cdh5.11.2.p0.4/jars/hive-common-1.1.0-cdh5.11.2.jar!/hive-log4j.properties
+WARNING: Hive CLI is deprecated and migration to Beeline is recommended.
+hive> create database jun17d;
+OK
+Time taken: 0.556 seconds
+hive> use jun17d;
+OK
+Time taken: 0.023 seconds
+hive> CREATE EXTERNAL TABLE employees_Table(
+    > id INT, 
+    > age INT, 
+    > gender STRING, 
+    > role STRING, 
+    > salary BIGINT
+    > )
+    > ROW FORMAT delimited fields terminated BY '|'
+    > STORED AS textfile
+    > LOCATION '/user/arun.kpselvam_gmail/emp1d';
+OK
+Time taken: 0.31 seconds
+hive> load data inpath '/user/arun.kpselvam_gmail/employees_data' into table employees_Table;
+Loading data to table jun17d.employees_table
+Table jun17d.employees_table stats: [numFiles=1, totalSize=23571]
+OK
+Time taken: 0.513 seconds
+hive> SET hive.enforce.bucketing=true;
+hive> CREATE TABLE Consultant_Table_Bucket (
+    > id INT, 
+    > age INT, 
+    > gender STRING, 
+    > role STRING, 
+    > salary INT) 
+    > clustered by (salary) into 4 buckets 
+    > ROW FORMAT delimited fields terminated BY '|'
+    > STORED AS orc;
+OK
+Time taken: 0.187 seconds
+hive> INSERT INTO TABLE Consultant_Table_Bucket
+    > SELECT id, age, gender, CASE WHEN role = 'consultant' THEN 'BigData Consultant' END,salary
+    > FROM employees_Table
+    > WHERE salary > 5000;
+Query ID = arun.kpselvam_gmail_20180617171414_eddd7c2b-41e8-4e5e-b31b-b80aadc4fcc3
+Total jobs = 1
+Launching Job 1 out of 1
+Number of reduce tasks determined at compile time: 4
+In order to change the average load for a reducer (in bytes):
+  set hive.exec.reducers.bytes.per.reducer=<number>
+In order to limit the maximum number of reducers:
+  set hive.exec.reducers.max=<number>
+In order to set a constant number of reducers:
+  set mapreduce.job.reduces=<number>
+Starting Job = job_1518113766572_11050, Tracking URL = http://ip-20-0-21-94.ap-south-1.compute.internal:8088/proxy/application_1518113766572_11050/
+Kill Command = /opt/cloudera/parcels/CDH-5.11.2-1.cdh5.11.2.p0.4/lib/hadoop/bin/hadoop job  -kill job_1518113766572_11050
+Hadoop job information for Stage-1: number of mappers: 1; number of reducers: 4
+2018-06-17 17:14:14,790 Stage-1 map = 0%,  reduce = 0%
+2018-06-17 17:14:20,087 Stage-1 map = 100%,  reduce = 0%, Cumulative CPU 2.96 sec
+2018-06-17 17:14:26,266 Stage-1 map = 100%,  reduce = 50%, Cumulative CPU 12.0 sec
+2018-06-17 17:14:27,292 Stage-1 map = 100%,  reduce = 75%, Cumulative CPU 16.86 sec
+2018-06-17 17:14:28,319 Stage-1 map = 100%,  reduce = 100%, Cumulative CPU 21.25 sec
+MapReduce Total cumulative CPU time: 21 seconds 250 msec
+Ended Job = job_1518113766572_11050
+Loading data to table jun17d.consultant_table_bucket
+Table jun17d.consultant_table_bucket stats: [numFiles=4, numRows=871, totalSize=7249, rawDataSize=87037]
+MapReduce Jobs Launched: 
+Stage-Stage-1: Map: 1  Reduce: 4   Cumulative CPU: 21.25 sec   HDFS Read: 47622 HDFS Write: 7609 SUCCESS
+Total MapReduce CPU Time Spent: 21 seconds 250 msec
+OK
+Time taken: 22.551 seconds
+hive> select * from Consultant_Table_Bucket limit 5;
+OK
+472     24      M       NULL    87544
+473     29      M       NULL    94708
+734     25      F       NULL    63108
+476     28      M       NULL    60440
+20      42      F       NULL    95660
+Time taken: 0.083 seconds, Fetched: 5 row(s)
+hive> INSERT OVERWRITE TABLE Consultant_Table_Bucket
+    > SELECT id, age, gender, CASE WHEN role = 'consultant' THEN 'BigData Consultant' END as role,salary
+    > FROM employees_Table
+    > WHERE salary > 5000;
+Query ID = arun.kpselvam_gmail_20180617171717_138cdf1f-a02a-434d-b68d-112f36f09858
+Total jobs = 1
+Launching Job 1 out of 1
+Number of reduce tasks determined at compile time: 4
+In order to change the average load for a reducer (in bytes):
+  set hive.exec.reducers.bytes.per.reducer=<number>
+In order to limit the maximum number of reducers:
+  set hive.exec.reducers.max=<number>
+In order to set a constant number of reducers:
+  set mapreduce.job.reduces=<number>
+Starting Job = job_1518113766572_11051, Tracking URL = http://ip-20-0-21-94.ap-south-1.compute.internal:8088/proxy/application_1518113766572_11051/
+Kill Command = /opt/cloudera/parcels/CDH-5.11.2-1.cdh5.11.2.p0.4/lib/hadoop/bin/hadoop job  -kill job_1518113766572_11051
+Hadoop job information for Stage-1: number of mappers: 1; number of reducers: 4
+2018-06-17 17:17:44,981 Stage-1 map = 0%,  reduce = 0%
+2018-06-17 17:17:51,151 Stage-1 map = 100%,  reduce = 0%, Cumulative CPU 2.88 sec
+2018-06-17 17:17:57,365 Stage-1 map = 100%,  reduce = 50%, Cumulative CPU 12.41 sec
+2018-06-17 17:17:59,416 Stage-1 map = 100%,  reduce = 75%, Cumulative CPU 17.47 sec
+2018-06-17 17:18:00,441 Stage-1 map = 100%,  reduce = 100%, Cumulative CPU 22.46 sec
+MapReduce Total cumulative CPU time: 22 seconds 460 msec
+Ended Job = job_1518113766572_11051
+Loading data to table jun17d.consultant_table_bucket
+Table jun17d.consultant_table_bucket stats: [numFiles=4, numRows=871, totalSize=7249, rawDataSize=87037]
+MapReduce Jobs Launched: 
+Stage-Stage-1: Map: 1  Reduce: 4   Cumulative CPU: 22.46 sec   HDFS Read: 48007 HDFS Write: 7609 SUCCESS
+Total MapReduce CPU Time Spent: 22 seconds 460 msec
+OK
+Time taken: 22.577 seconds
+hive> select * from Consultant_Table_Bucket limit 5;
+OK
+472     24      M       NULL    87544
+473     29      M       NULL    94708
+734     25      F       NULL    63108
+476     28      M       NULL    60440
+20      42      F       NULL    95660
+Time taken: 0.062 seconds, Fetched: 5 row(s)
+hive> select * from Consultant_Table_Bucket limit 100;
+OK
+472     24      M       NULL    87544
+473     29      M       NULL    94708
+734     25      F       NULL    63108
+476     28      M       NULL    60440
+20      42      F       NULL    95660
+482     18      F       NULL    40256
+483     29      M       NULL    43212
+484     27      M       NULL    21208
+488     48      M       BigData Consultant      21012
+120     47      F       NULL    6260
+494     38      F       NULL    49428
+497     20      M       NULL    50112
+498     26      M       NULL    55408
+502     22      M       NULL    23092
+515     53      M       NULL    49508
+519     22      M       NULL    55320
+526     30      M       NULL    97124
+527     33      M       NULL    12180
+920     30      F       NULL    90008
+123     48      F       NULL    20008
+528     18      M       NULL    55104
+529     47      F       NULL    44224
+713     42      F       NULL    7204
+877     30      M       NULL    77504
+530     29      M       NULL    94040
+710     19      M       NULL    92020
+132     24      M       NULL    94612
+531     30      F       NULL    97408
+534     20      M       NULL    5464
+544     44      F       NULL    29464
+134     31      M       NULL    80236
+703     26      M       NULL    49512
+702     37      M       NULL    89104
+874     36      M       NULL    37076
+137     50      M       NULL    84408
+545     27      M       BigData Consultant      8052
+548     51      M       NULL    95468
+549     42      M       NULL    45680
+696     55      M       NULL    94920
+558     56      F       NULL    63132
+139     20      M       NULL    8904
+574     56      M       NULL    53188
+871     31      M       NULL    44648
+143     42      M       BigData Consultant      8832
+690     35      M       NULL    63304
+575     33      M       NULL    46032
+688     37      F       NULL    60476
+919     25      M       NULL    14216
+586     20      M       NULL    79508
+156     25      M       NULL    8360
+587     26      M       NULL    14216
+157     57      M       NULL    70808
+682     23      M       NULL    55128
+681     44      F       NULL    97208
+161     50      M       NULL    55104
+592     18      M       NULL    97520
+597     23      M       NULL    84116
+602     47      F       NULL    34656
+676     30      M       NULL    32712
+605     33      M       NULL    33716
+163     49      M       NULL    97212
+606     28      M       NULL    63044
+611     46      M       NULL    77008
+618     15      F       NULL    44212
+620     18      F       NULL    81648
+918     40      M       NULL    70116
+668     29      F       NULL    10016
+666     44      M       NULL    61820
+665     25      M       NULL    55412
+629     46      F       NULL    44224
+44      26      M       BigData Consultant      46260
+630     26      F       NULL    55408
+862     25      M       NULL    13820
+660     26      M       NULL    77380
+659     31      M       NULL    54248
+657     26      F       NULL    78704
+56      25      M       NULL    46260
+177     20      M       NULL    19104
+859     18      F       NULL    6492
+937     48      M       NULL    98072
+178     26      M       NULL    49512
+854     29      F       NULL    55408
+182     36      M       NULL    33884
+183     33      M       NULL    27708
+188     42      M       NULL    29440
+192     42      M       NULL    90840
+849     15      F       NULL    25652
+7       57      M       NULL    91344
+199     30      M       NULL    17604
+912     51      M       NULL    6512
+204     52      F       NULL    10960
+843     35      M       NULL    44212
+219     32      M       NULL    43212
+60      50      M       NULL    6472
+224     31      F       NULL    43512
+230     28      F       NULL    14476
+931     60      M       NULL    33556
+238     42      F       NULL    44124
+61      36      M       NULL    30040
+908     44      F       NULL    68504
+Time taken: 0.061 seconds, Fetched: 100 row(s)
+hive> INSERT OVERWRITE TABLE Consultant_Table_Bucket
+    > SELECT id, age, gender, CASE WHEN role = 'consultant' THEN 'BigData Consultant' ELSE role END as role,salary
+    > FROM employees_Table
+    > WHERE salary > 5000;
+Query ID = arun.kpselvam_gmail_20180617172222_53b6266d-373a-44f5-9e5a-aee25bcd07f0
+Total jobs = 1
+Launching Job 1 out of 1
+Number of reduce tasks determined at compile time: 4
+In order to change the average load for a reducer (in bytes):
+  set hive.exec.reducers.bytes.per.reducer=<number>
+In order to limit the maximum number of reducers:
+  set hive.exec.reducers.max=<number>
+In order to set a constant number of reducers:
+  set mapreduce.job.reduces=<number>
+Starting Job = job_1518113766572_11053, Tracking URL = http://ip-20-0-21-94.ap-south-1.compute.internal:8088/proxy/application_1518113766572_11053/
+Kill Command = /opt/cloudera/parcels/CDH-5.11.2-1.cdh5.11.2.p0.4/lib/hadoop/bin/hadoop job  -kill job_1518113766572_11053
+Hadoop job information for Stage-1: number of mappers: 1; number of reducers: 4
+2018-06-17 17:22:59,823 Stage-1 map = 0%,  reduce = 0%
+2018-06-17 17:23:06,043 Stage-1 map = 100%,  reduce = 0%, Cumulative CPU 3.22 sec
+2018-06-17 17:23:13,231 Stage-1 map = 100%,  reduce = 50%, Cumulative CPU 12.05 sec
+2018-06-17 17:23:14,259 Stage-1 map = 100%,  reduce = 75%, Cumulative CPU 17.38 sec
+2018-06-17 17:23:15,287 Stage-1 map = 100%,  reduce = 100%, Cumulative CPU 22.22 sec
+MapReduce Total cumulative CPU time: 22 seconds 220 msec
+Ended Job = job_1518113766572_11053
+Loading data to table jun17d.consultant_table_bucket
+Table jun17d.consultant_table_bucket stats: [numFiles=4, numRows=871, totalSize=8255, rawDataSize=164619]
+MapReduce Jobs Launched: 
+Stage-Stage-1: Map: 1  Reduce: 4   Cumulative CPU: 22.22 sec   HDFS Read: 48066 HDFS Write: 8615 SUCCESS
+Total MapReduce CPU Time Spent: 22 seconds 220 msec
+OK
+Time taken: 22.458 seconds
+hive> select * from Consultant_Table_Bucket limit 5;
+OK
+472     24      M       student 87544
+473     29      M       student 94708
+734     25      F       other   63108
+476     28      M       student 60440
+20      42      F       homemaker       95660
+Time taken: 0.086 seconds, Fetched: 5 row(s)
+hive> SELECT max(salary) 
+    > FROM Consultant_Table_Bucket
+    > WHERE role = 'BigData Consultant';
+Query ID = arun.kpselvam_gmail_20180617172323_6e2f5e74-ff7e-411f-80ed-425a5a63dfab
+Total jobs = 1
+Launching Job 1 out of 1
+Number of reduce tasks determined at compile time: 1
+In order to change the average load for a reducer (in bytes):
+  set hive.exec.reducers.bytes.per.reducer=<number>
+In order to limit the maximum number of reducers:
+  set hive.exec.reducers.max=<number>
+In order to set a constant number of reducers:
+  set mapreduce.job.reduces=<number>
+Starting Job = job_1518113766572_11054, Tracking URL = http://ip-20-0-21-94.ap-south-1.compute.internal:8088/proxy/application_1518113766572_11054/
+Kill Command = /opt/cloudera/parcels/CDH-5.11.2-1.cdh5.11.2.p0.4/lib/hadoop/bin/hadoop job  -kill job_1518113766572_11054
+Hadoop job information for Stage-1: number of mappers: 1; number of reducers: 1
+2018-06-17 17:23:45,127 Stage-1 map = 0%,  reduce = 0%
+2018-06-17 17:23:46,155 Stage-1 map = 100%,  reduce = 100%, Cumulative CPU 3.4 sec
+MapReduce Total cumulative CPU time: 3 seconds 400 msec
+Ended Job = job_1518113766572_11054
+MapReduce Jobs Launched: 
+Stage-Stage-1: Map: 1  Reduce: 1   Cumulative CPU: 3.4 sec   HDFS Read: 56617 HDFS Write: 542547 SUCCESS
+Ended Job = job_1518113766572_11050
+Total MapReduce CPU Time Spent: 3 seconds 400 msec
+OK
+95403
+Time taken: 8.923 seconds, Fetched: 1 row(s)
+hive> SELECT min(salary) 
+    > FROM Consultant_Table_Bucket
+    > WHERE role = 'BigData Consultant';
+Query ID = arun.kpselvam_gmail_20180617172323_83b49ace-54ea-4fba-967d-b64be78db4c6
+Total jobs = 1
+Launching Job 1 out of 1
+Number of reduce tasks determined at compile time: 1
+In order to change the average load for a reducer (in bytes):
+  set hive.exec.reducers.bytes.per.reducer=<number>
+In order to limit the maximum number of reducers:
+  set hive.exec.reducers.max=<number>
+In order to set a constant number of reducers:
+  set mapreduce.job.reduces=<number>
+Starting Job = job_1518113766572_11055, Tracking URL = http://ip-20-0-21-94.ap-south-1.compute.internal:8088/proxy/application_1518113766572_11055/
+Kill Command = /opt/cloudera/parcels/CDH-5.11.2-1.cdh5.11.2.p0.4/lib/hadoop/bin/hadoop job  -kill job_1518113766572_11055
+Hadoop job information for Stage-1: number of mappers: 1; number of reducers: 1
+2018-06-17 17:24:00,782 Stage-1 map = 0%,  reduce = 0%
+2018-06-17 17:24:01,825 Stage-1 map = 100%,  reduce = 0%, Cumulative CPU 2.18 sec
+2018-06-17 17:24:02,850 Stage-1 map = 100%,  reduce = 100%, Cumulative CPU 2.98 sec
+MapReduce Total cumulative CPU time: 2 seconds 980 msec
+Ended Job = job_1518113766572_11055
+MapReduce Jobs Launched: 
+Stage-Stage-1: Map: 1  Reduce: 1   Cumulative CPU: 2.98 sec   HDFS Read: 56641 HDFS Write: 542546 SUCCESS
+Total MapReduce CPU Time Spent: 2 seconds 980 msec
+OK
+8052
+Time taken: 8.853 seconds, Fetched: 1 row(s)
+hive> 
